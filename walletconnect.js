@@ -3,8 +3,8 @@ const projectId = "15da3c431a74b29edb63198a503d45b5";
 const metadata = {
   name: "CyberPetsAi Trainer",
   description: "Mint a prize NFT when your CyberPet reaches full health + training!",
-  url: "https://digitalknuckles.github.io/MoveToMint/",
-  icons: ["https://digitalknuckles.github.io/MoveToMint/icon.png"]
+  url: "https://cyberpetsai.xyz/",
+  icons: ["https://cyberpetsai.xyz/icon.png"]
 };
 
 const providerOptions = {
