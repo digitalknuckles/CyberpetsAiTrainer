@@ -7,142 +7,155 @@
   <title>CyberPetsAi&copy; Trainer *Lite</title>
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+ <style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
-    html, body {
-      overflow: hidden;
-      height: 100%;
-      width: 100%;
-      position: relative;
-    }
+  html, body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #111;
+  }
 
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-      background: lightgray;
-      border: 2px solid black;
-      touch-action: none;
-    }
+  #game-container {
+    position: relative;
+    width: 100%;
+    max-width: 1000px;
+    aspect-ratio: 1 / 1; /* or 16 / 9 if preferred */
+    background: #ccc;
+    border: 2px solid black;
+    overflow: hidden;
+  }
 
-    #ui {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      right: 10px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-around;
-      gap: 20px;
-      z-index: 10;
-    }
+  canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: none;
+    object-fit: contain;
+  }
 
-    .btn-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+  #ui {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 20px;
+    z-index: 10;
+  }
 
-    .btn {
-      background-color: #444;
-      color: #fff;
-      padding: 10px 14px;
-      border: none;
-      border-radius: 12px;
-      font-size: 14px;
-      cursor: pointer;
-      min-width: 80px;
-      transition: background 0.3s;
-    }
+  .btn-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 
-    .btn:hover {
-      background-color: #666;
-    }
+  .btn {
+    background-color: #444;
+    color: #fff;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    cursor: pointer;
+    min-width: 80px;
+    transition: background 0.3s;
+  }
 
-    .status-bar {
-      margin-top: 4px;
-      height: 6px;
-      border-radius: 3px;
-      background: #333;
-      width: 100%;
-      overflow: hidden;
-    }
+  .btn:hover {
+    background-color: #666;
+  }
 
-    .status-bar::after {
-      content: "";
-      display: block;
-      height: 100%;
-      background: limegreen;
-      width: 100%;
-      transition: width 0.2s;
-    }
+  .status-bar {
+    margin-top: 4px;
+    height: 6px;
+    border-radius: 3px;
+    background: #333;
+    width: 100%;
+    overflow: hidden;
+  }
 
-    .green::after { background: limegreen; }
-    .red::after { background: red; }
-    .blink-red::after {
-      background: red;
-      animation: blink 1s infinite;
-    }
-    .blink-green::after {
-      background: limegreen;
-      animation: blink 1s infinite;
-    }
+  .status-bar::after {
+    content: "";
+    display: block;
+    height: 100%;
+    background: limegreen;
+    width: 100%;
+    transition: width 0.2s;
+  }
 
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
+  .green::after { background: limegreen; }
+  .red::after { background: red; }
+  .blink-red::after {
+    background: red;
+    animation: blink 1s infinite;
+  }
+  .blink-green::after {
+    background: limegreen;
+    animation: blink 1s infinite;
+  }
 
-    #trainingProgressContainer {
-      width: 100%;
-      height: 10px;
-      background: #333;
-      margin-top: 5px;
-      border-radius: 4px;
-    }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
 
-    #trainingProgressBar {
-      width: 0%;
-      height: 100%;
-      background: yellow;
-      border-radius: 4px;
-    }
+  #trainingProgressContainer {
+    width: 100%;
+    height: 10px;
+    background: #333;
+    margin-top: 5px;
+    border-radius: 4px;
+  }
 
-    #globalHealthContainer {
-      position: absolute;
-      bottom: 10px;
-      right: 10px;
-      width: 200px;
-      height: 10px;
-      background: #333;
-      border-radius: 5px;
-      overflow: hidden;
-    }
+  #trainingProgressBar {
+    width: 0%;
+    height: 100%;
+    background: yellow;
+    border-radius: 4px;
+  }
 
-    #globalHealthBar {
-      width: 100%;
-      height: 100%;
-      background: limegreen;
-      transition: width 0.2s;
-    }
+  #globalHealthContainer {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 200px;
+    height: 10px;
+    background: #333;
+    border-radius: 5px;
+    overflow: hidden;
+  }
 
-    #criticalWarning {
-      position: absolute;
-      bottom: 30px;
-      right: 10px;
-      color: red;
-      font-weight: bold;
-      display: none;
-    }
-  </style>
+  #globalHealthBar {
+    width: 100%;
+    height: 100%;
+    background: limegreen;
+    transition: width 0.2s;
+  }
+
+  #criticalWarning {
+    position: absolute;
+    bottom: 30px;
+    right: 10px;
+    color: red;
+    font-weight: bold;
+    display: none;
+  }
+</style>
 </head>
 <body>
-  <canvas id="gameCanvas"></canvas>
+ <div id="game-container">
+  <canvas id="game-canvas"></canvas>
+</div>
 
   <div id="ui">
     <div class="btn-group">
