@@ -1,2 +1,2 @@
-# CyberpetsAiTrainer
-Building an App for FunFart Games, Digitalknuckles, and LazerPixel Studios Hub!
+# cyberpets
+Building an App for FunFart Games, Digitalknuckles, and LazerPixel Hub!
