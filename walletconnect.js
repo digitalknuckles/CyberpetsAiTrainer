@@ -1,67 +1,74 @@
-const projectId = "15da3c431a74b29edb63198a503d45b5";
+import { ethers } from 'https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js';
 
-const metadata = {
-  name: "CyberPetsAi Trainer",
-  description: "Mint a prize NFT when your CyberPet reaches full health + training!",
-  url: "https://cyberpetsai.xyz/",
-  icons: ["https://cyberpetsai.xyz/icon.png"]
-};
-
-const providerOptions = {
-  walletconnect: {
-    package: window.WalletConnectProvider.default,
-    options: {
-      infuraId: projectId
-    }
+const CONTRACT_ADDRESS = '0x36b8192ef6bc601dcf380af0fa439ba8b78417cb';
+const ABI = [
+  {
+    inputs: [],
+    name: 'mintPrize',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function'
   }
-};
+];
 
-const web3Modal = new window.Web3Modal.default({
-  cacheProvider: true,
-  providerOptions,
-  theme: "light",
-  metadata
-});
+let provider;
+let signer;
+let contract;
 
 export async function connectWallet() {
-  try {
-    const provider = await web3Modal.connect();
-    const web3Provider = new window.ethers.providers.Web3Provider(provider);
-    const signer = web3Provider.getSigner();
-    const address = await signer.getAddress();
-    console.log("🔌 Wallet connected:", address);
-    return { provider: web3Provider, signer, address };
-  } catch (err) {
-    console.error("❌ Wallet connection failed:", err);
-    alert("❌ Failed to connect wallet: " + (err.message || err));
-    return null;
+  if (window.ethereum) {
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+
+      if (accounts.length === 0) {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+      }
+
+      provider = new ethers.providers.Web3Provider(window.ethereum);
+      signer = provider.getSigner();
+      contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+
+      console.log('✅ Wallet connected successfully!');
+      return signer;
+    } catch (error) {
+      console.error('❌ Failed to connect wallet:', error);
+      throw new Error('Connection to wallet failed');
+    }
+  } else {
+    alert('Please install MetaMask or a compatible wallet.');
+    throw new Error('No wallet found');
   }
 }
 
-export async function mintPrizeNFT() {
-  const wallet = await connectWallet();
-  if (!wallet) return;
+export async function mintPrize() {
+  if (!contract || !signer) {
+    await connectWallet();
+    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+  }
 
   try {
-    const contract = new window.ethers.Contract(
-      "0x36b8192ef6bc601dcf380af0fa439ba8b78417cb",
-      [
-        {
-          inputs: [],
-          name: "mintPrize",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function"
-        }
-      ],
-      wallet.signer
-    );
-
     const tx = await contract.mintPrize();
+    console.log('🎉 Minting transaction sent:', tx.hash);
     await tx.wait();
-    alert("🎉 NFT Minted Successfully!");
-  } catch (err) {
-    console.error("❌ Minting failed:", err);
-    alert("❌ Minting failed: " + (err.reason || err.message || err));
+    console.log('✅ Prize minted successfully!');
+  } catch (error) {
+    console.error('❌ Failed to mint prize:', error);
+    throw new Error('Minting failed');
   }
 }
+
+// Optional if your DOM/script needs this globally
+export async function mintPrizeNFT() {
+  await mintPrize();
+}
+window.mintPrizeNFT = mintPrizeNFT;
+
+window.addEventListener("message", (event) => {
+  const { action, message } = event.data;
+
+  if (action === "victory-achieved") {
+    console.log("🏆 Victory achieved:", message);
+    // Let the game display the UI and handle mint trigger separately
+    // (No automatic minting here)
+  }
+});
