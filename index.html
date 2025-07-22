@@ -216,63 +216,57 @@ async function verifyWalletAccess(statusEl) {
 
     statusEl.textContent = "Checking NFT ownership...";
     const contract = new ethers.Contract(nftAddress, nftABI, signer);
-    const balance = await contract.balanceOf(userAddress, tokenId);
+const balance = await contract.balanceOf(userAddress, tokenId);
 
-    if (balance.toNumber() > 0) {
-      const signature = await signer.signMessage(signatureMessage);
-      if (signature) {
-        sessionStorage.setItem("PETS_verified", "true");
-        return true;
-      }
-    } else {
-statusEl.textContent = "Not Verified. Get Access Pass?";
-
-const yesBtn = document.createElement("button");
-yesBtn.textContent = "✅ Yes, Get Pass";
-Object.assign(yesBtn.style, {
-  marginTop: "10px",
-  padding: "10px 20px",
-  fontSize: "1rem",
-  cursor: "pointer",
-  borderRadius: "8px",
-  backgroundColor: "#4CAF50",
-  color: "white",
-  border: "none"
-});
-
-const noBtn = document.createElement("button");
-noBtn.textContent = "❌ No, Go Back";
-Object.assign(noBtn.style, {
-  marginTop: "10px",
-  padding: "10px 20px",
-  fontSize: "1rem",
-  cursor: "pointer",
-  borderRadius: "8px",
-  backgroundColor: "#f44336",
-  color: "white",
-  border: "none",
-  marginLeft: "10px"
-});
-
-statusEl.appendChild(document.createElement("br"));
-statusEl.appendChild(yesBtn);
-statusEl.appendChild(noBtn);
-
-yesBtn.onclick = () => {
-  window.location.href = "https://opensea.io/item/matic/0x94ab58ad6bf5ef63d160f29c7185d73f78b2a517/1";
-};
-
-noBtn.onclick = () => {
-  statusEl.textContent = "Verification cancelled. You can try again.";
-  yesBtn.remove();
-  noBtn.remove();
-};
-  } catch (err) {
-    console.error(err);
-    statusEl.textContent = "Verification failed. Please try again.";
+if (balance.toNumber() > 0) {
+  const signature = await signer.signMessage(signatureMessage);
+  if (signature) {
+    sessionStorage.setItem("PETS_verified", "true");
+    return true;
   }
+} else {
+  statusEl.textContent = "Not Verified. Get Access Pass?";
 
-  return false;
+  const yesBtn = document.createElement("button");
+  yesBtn.textContent = "✅ Yes, Get Pass";
+  Object.assign(yesBtn.style, {
+    marginTop: "10px",
+    padding: "10px 20px",
+    fontSize: "1rem",
+    cursor: "pointer",
+    borderRadius: "8px",
+    backgroundColor: "#4CAF50",
+    color: "white",
+    border: "none"
+  });
+
+  const noBtn = document.createElement("button");
+  noBtn.textContent = "❌ No, Go Back";
+  Object.assign(noBtn.style, {
+    marginTop: "10px",
+    padding: "10px 20px",
+    fontSize: "1rem",
+    cursor: "pointer",
+    borderRadius: "8px",
+    backgroundColor: "#f44336",
+    color: "white",
+    border: "none",
+    marginLeft: "10px"
+  });
+
+  statusEl.appendChild(document.createElement("br"));
+  statusEl.appendChild(yesBtn);
+  statusEl.appendChild(noBtn);
+
+  yesBtn.onclick = () => {
+    window.location.href = "https://opensea.io/item/matic/0x94ab58ad6bf5ef63d160f29c7185d73f78b2a517/1";
+  };
+
+  noBtn.onclick = () => {
+    statusEl.textContent = "Verification cancelled. You can try again.";
+    yesBtn.remove();
+    noBtn.remove();
+  };
 }
 
 function showSiteContent() {
