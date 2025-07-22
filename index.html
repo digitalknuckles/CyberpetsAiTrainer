@@ -981,105 +981,140 @@ function checkVictoryConditions() {
 }
 
 function showVictoryOverlay() {
-  if (document.getElementById("victoryOverlay")) return;
+  if (document.getElementById("victoryOverlay") || sessionStorage.getItem("PETS_minted") === "true") {
+    console.log("Mint already completed this session or overlay exists.");
+    return;
+  }
+
+  const REQUIRED_CHAIN_ID = "0x89"; // Polygon = 137, use "0x2105" for Base
 
   const overlay = document.createElement('div');
   overlay.id = "victoryOverlay";
-  overlay.style.position = "fixed";
-  overlay.style.top = 0;
-  overlay.style.left = 0;
-  overlay.style.width = "100vw";
-  overlay.style.height = "100vh";
-  overlay.style.backgroundColor = "rgba(0, 0, 0, 0.85)";
-  overlay.style.display = "flex";
-  overlay.style.flexDirection = "column";
-  overlay.style.alignItems = "center";
-  overlay.style.justifyContent = "center";
-  overlay.style.zIndex = 10000;
-  overlay.style.color = "white";
-  overlay.style.textAlign = "center";
+  Object.assign(overlay.style, {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 10000,
+    color: "white",
+    textAlign: "center"
+  });
 
-  // 🖼️ Prize image
   const prizeImg = document.createElement('img');
-  prizeImg.src = "./prize.gif";
-  prizeImg.alt = "Victory Prize";
-  prizeImg.style.width = "300px";
-  prizeImg.style.height = "auto";
-  prizeImg.style.marginBottom = "20px";
+  Object.assign(prizeImg, {
+    src: "./prize.gif",
+    alt: "Victory Prize"
+  });
+  Object.assign(prizeImg.style, {
+    width: "300px",
+    height: "auto",
+    marginBottom: "20px"
+  });
 
-  // 🏆 Message
   const msg = document.createElement('div');
   msg.innerHTML = "🏆 Victory! You fully trained your companion!";
-  msg.style.fontSize = "2.5rem";
-  msg.style.marginBottom = "20px";
+  Object.assign(msg.style, {
+    fontSize: "2.5rem",
+    marginBottom: "20px"
+  });
 
-  // 🧬 Mint Button
   const mintBtn = document.createElement('button');
   mintBtn.textContent = "Mint Your Trophy";
-  mintBtn.style.padding = "12px 24px";
-  mintBtn.style.fontSize = "1.5rem";
-  mintBtn.style.cursor = "pointer";
-  mintBtn.style.marginBottom = "15px";
-  mintBtn.style.borderRadius = "10px";
-  mintBtn.style.border = "none";
-  mintBtn.style.backgroundColor = "#4CAF50";
-  mintBtn.style.color = "white";
+  Object.assign(mintBtn.style, {
+    padding: "12px 24px",
+    fontSize: "1.5rem",
+    cursor: "pointer",
+    marginBottom: "15px",
+    borderRadius: "10px",
+    border: "none",
+    backgroundColor: "#4CAF50",
+    color: "white"
+  });
 
-  // 🟢 Mint Handler (one-time)
   mintBtn.addEventListener("click", async () => {
     mintBtn.disabled = true;
-    mintBtn.textContent = "Minting...";
+    mintBtn.textContent = "Checking network...";
+
     try {
-      if (typeof window.mintPrizeNFT === 'function') {
-        await window.mintPrizeNFT();
+      // Detect & Switch Network if needed
+      if (!window.ethereum) throw new Error("MetaMask not detected.");
+      const currentChain = await window.ethereum.request({ method: "eth_chainId" });
+
+      if (currentChain !== REQUIRED_CHAIN_ID) {
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: REQUIRED_CHAIN_ID }],
+        });
+      }
+
+      mintBtn.textContent = "Minting...";
+
+      if (typeof window.mintPrizeNFT !== 'function') {
+        throw new Error("mintPrizeNFT function is not available.");
+      }
+
+      const success = await window.mintPrizeNFT();
+
+      if (success) {
+        sessionStorage.setItem("PETS_minted", "true");
         alert("🎉 NFT Minted Successfully!");
 
-        // Restart button after successful mint
         const restartBtn = document.createElement('button');
         restartBtn.textContent = "Restart Game";
-        restartBtn.style.marginTop = "20px";
-        restartBtn.style.padding = "10px 20px";
-        restartBtn.style.fontSize = "1.2rem";
-        restartBtn.style.cursor = "pointer";
-        restartBtn.style.border = "none";
-        restartBtn.style.borderRadius = "10px";
-        restartBtn.style.backgroundColor = "#2196F3";
-        restartBtn.style.color = "#fff";
+        Object.assign(restartBtn.style, {
+          marginTop: "20px",
+          padding: "10px 20px",
+          fontSize: "1.2rem",
+          cursor: "pointer",
+          border: "none",
+          borderRadius: "10px",
+          backgroundColor: "#2196F3",
+          color: "#fff"
+        });
+
         restartBtn.addEventListener("click", () => {
+          overlay.remove();
           window.location.reload();
         });
 
         mintBtn.style.display = "none";
         overlay.appendChild(restartBtn);
       } else {
-        throw new Error("mintPrizeNFT function is not defined.");
+        throw new Error("Mint failed or was cancelled.");
       }
+
     } catch (err) {
-      console.error("Minting failed:", err);
-      showErrorMessage("Minting failed. Please try again.");
+      console.error("❌ Minting error:", err);
+      showErrorMessage("Minting failed. Please check your wallet.");
       mintBtn.disabled = false;
       mintBtn.textContent = "Mint Your Trophy";
     }
-  }, { once: true }); // ⚠️ Only allow one click
+  }, { once: true });
 
-  // 🛠 Error UI Helper
   function showErrorMessage(text) {
     const msg = document.createElement('div');
     msg.textContent = text;
-    msg.style.position = "fixed";
-    msg.style.top = "20%";
-    msg.style.left = "50%";
-    msg.style.transform = "translateX(-50%)";
-    msg.style.background = "rgba(0,0,0,0.8)";
-    msg.style.color = "white";
-    msg.style.padding = "15px 25px";
-    msg.style.borderRadius = "10px";
-    msg.style.zIndex = "10000";
+    Object.assign(msg.style, {
+      position: "fixed",
+      top: "20%",
+      left: "50%",
+      transform: "translateX(-50%)",
+      background: "rgba(0,0,0,0.8)",
+      color: "white",
+      padding: "15px 25px",
+      borderRadius: "10px",
+      zIndex: "10000"
+    });
     document.body.appendChild(msg);
     setTimeout(() => msg.remove(), 3000);
   }
 
-  // 📦 Assemble Overlay
   overlay.appendChild(prizeImg);
   overlay.appendChild(msg);
   overlay.appendChild(mintBtn);
