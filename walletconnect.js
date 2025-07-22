@@ -59,7 +59,12 @@ export async function mintPrize() {
 
 // Optional if your DOM/script needs this globally
 export async function mintPrizeNFT() {
-  await mintPrize();
+  try {
+    await mintPrize();
+    return true; // ✅ success
+  } catch (err) {
+    return false; // ❌ failure
+  }
 }
 window.mintPrizeNFT = mintPrizeNFT;
 
