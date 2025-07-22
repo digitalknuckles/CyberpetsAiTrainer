@@ -51,29 +51,15 @@ export async function mintPrize() {
     console.log('🎉 Minting transaction sent:', tx.hash);
     await tx.wait();
     console.log('✅ Prize minted successfully!');
+    return true;
   } catch (error) {
     console.error('❌ Failed to mint prize:', error);
-    throw new Error('Minting failed');
+    return false;
   }
 }
 
-// Optional if your DOM/script needs this globally
+// Exposed for the button logic
 export async function mintPrizeNFT() {
-  try {
-    await mintPrize();
-    return true; // ✅ success
-  } catch (err) {
-    return false; // ❌ failure
-  }
+  return await mintPrize(); // ✅ return true/false
 }
 window.mintPrizeNFT = mintPrizeNFT;
-
-window.addEventListener("message", (event) => {
-  const { action, message } = event.data;
-
-  if (action === "victory-achieved") {
-    console.log("🏆 Victory achieved:", message);
-    // Let the game display the UI and handle mint trigger separately
-    // (No automatic minting here)
-  }
-});
