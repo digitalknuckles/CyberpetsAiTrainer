@@ -49,9 +49,16 @@ export async function mintPrize() {
   try {
     const tx = await contract.mintPrize();
     console.log('🎉 Minting transaction sent:', tx.hash);
-    await tx.wait();
-    console.log('✅ Prize minted successfully!');
-    return true;
+
+    const receipt = await tx.wait();
+    console.log('✅ Transaction confirmed!', receipt);
+
+    if (receipt.status === 1) {
+      return true;
+    } else {
+      console.warn("⚠️ Transaction reverted or failed.");
+      return false;
+    }
   } catch (error) {
     console.error('❌ Failed to mint prize:', error);
     return false;
