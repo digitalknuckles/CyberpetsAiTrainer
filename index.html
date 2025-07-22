@@ -1018,12 +1018,8 @@ function checkVictoryConditions() {
 }
 
 function showVictoryOverlay() {
-  if (document.getElementById("victoryOverlay") || sessionStorage.getItem("PETS_minted") === "true") {
-    console.log("Mint already completed this session or overlay exists.");
-    return;
-  }
-
-  const REQUIRED_CHAIN_ID = "0x89"; // Polygon = 137, use "0x2105" for Base
+  if (sessionStorage.getItem("PETS_minted") === "true") return;
+  if (document.getElementById("victoryOverlay")) return;
 
   const overlay = document.createElement('div');
   overlay.id = "victoryOverlay";
@@ -1076,31 +1072,14 @@ function showVictoryOverlay() {
 
   mintBtn.addEventListener("click", async () => {
     mintBtn.disabled = true;
-    mintBtn.textContent = "Checking network...";
+    mintBtn.textContent = "Minting...";
 
     try {
-      // Detect & Switch Network if needed
-      if (!window.ethereum) throw new Error("MetaMask not detected.");
-      const currentChain = await window.ethereum.request({ method: "eth_chainId" });
-
-      if (currentChain !== REQUIRED_CHAIN_ID) {
-        await window.ethereum.request({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: REQUIRED_CHAIN_ID }],
-        });
-      }
-
-      mintBtn.textContent = "Minting...";
-
-      if (typeof window.mintPrizeNFT !== 'function') {
-        throw new Error("mintPrizeNFT function is not available.");
-      }
-
       const success = await window.mintPrizeNFT();
 
       if (success) {
-        sessionStorage.setItem("PETS_minted", "true");
         alert("🎉 NFT Minted Successfully!");
+        sessionStorage.setItem("PETS_minted", "true");
 
         const restartBtn = document.createElement('button');
         restartBtn.textContent = "Restart Game";
@@ -1123,12 +1102,11 @@ function showVictoryOverlay() {
         mintBtn.style.display = "none";
         overlay.appendChild(restartBtn);
       } else {
-        throw new Error("Mint failed or was cancelled.");
+        throw new Error("Minting failed or user rejected.");
       }
-
     } catch (err) {
-      console.error("❌ Minting error:", err);
-      showErrorMessage("Minting failed. Please check your wallet.");
+      console.error("❌ Minting failed:", err);
+      showErrorMessage("Minting failed. Please try again.");
       mintBtn.disabled = false;
       mintBtn.textContent = "Mint Your Trophy";
     }
